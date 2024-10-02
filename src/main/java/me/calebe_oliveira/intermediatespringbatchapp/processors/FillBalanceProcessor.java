@@ -29,7 +29,7 @@ public class FillBalanceProcessor implements ItemProcessor<BankTransaction, Bala
         return balanceUpdate;
     }
 
-    private double getLatestTransactionBalance() {
+    public double getLatestTransactionBalance() {
         if(stepExecution == null) {
             throw new RuntimeException("Can not process item without accessing the step execution");
         }

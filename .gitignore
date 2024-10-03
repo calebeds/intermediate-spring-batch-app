@@ -31,3 +31,7 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### other files
+merchant_month.json
+daily_balance.json

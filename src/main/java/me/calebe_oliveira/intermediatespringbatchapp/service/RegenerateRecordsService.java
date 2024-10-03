@@ -1,11 +1,11 @@
-package me.calebe_oliveira.intermediatespringbatchapp.utils;
+package me.calebe_oliveira.intermediatespringbatchapp.service;
 
 import com.google.common.collect.ImmutableMap;
-import me.calebe_oliveira.intermediatespringbatchapp.config.SourceConfiguration;
 import me.calebe_oliveira.intermediatespringbatchapp.model.BankTransaction;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+import me.calebe_oliveira.intermediatespringbatchapp.utils.SourceManagementUtils;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.stereotype.Service;
 
 import javax.sql.DataSource;
 import java.math.BigDecimal;
@@ -16,7 +16,8 @@ import java.util.Map;
 import java.util.Random;
 import java.util.UUID;
 
-public class GenerateSourceDatabase {
+@Service
+public class RegenerateRecordsService {
     private static final int TARGET_RECORD_NUM = 300;
     private static final int TARGET_UNIQUE_MERCHANT_NUM = 40;
     private static final Map<Integer, Integer> DAYS_IN_MONTH_MAP = ImmutableMap.<Integer, Integer>builder()
@@ -34,10 +35,14 @@ public class GenerateSourceDatabase {
             .put(12, 31)
             .build();
 
-    public static void main(String[] args) {
-        ApplicationContext context = new AnnotationConfigApplicationContext(SourceConfiguration.class);
-        JdbcTemplate jdbcTemplate = new JdbcTemplate(context.getBean(DataSource.class));
+    private final DataSource sourceDataSource;
 
+    public RegenerateRecordsService(@Qualifier("sourceDataSource") DataSource sourceDataSource) {
+        this.sourceDataSource = sourceDataSource;
+    }
+
+    public void regenerateBankTransactionRecords()  {
+        JdbcTemplate jdbcTemplate = new JdbcTemplate(sourceDataSource);
         SourceManagementUtils.initializeEmptyDatabase(jdbcTemplate);
 
         List<BankTransaction> recordsToInsert = new ArrayList<>(TARGET_RECORD_NUM);
@@ -69,6 +74,11 @@ public class GenerateSourceDatabase {
             }
         });
 
+        for(BankTransaction transaction: recordsToInsert) {
+            SourceManagementUtils.insertBankTransaction(transaction, jdbcTemplate);
+        }
+
+        System.out.println("Input source table with " + TARGET_RECORD_NUM + " records is successfully initialized");
     }
 
     private static BankTransaction generateRecord(Random random, String[] merchants) {

@@ -1,5 +1,6 @@
 package me.calebe_oliveira.intermediatespringbatchapp.utils;
 
+import me.calebe_oliveira.intermediatespringbatchapp.model.BankTransaction;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import javax.sql.DataSource;
@@ -14,7 +15,7 @@ public class SourceManagementUtils {
     public static void addAdjustedColumn(DataSource dataSource) {
         JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
 
-        jdbcTemplate.update("ALTER TABLE bank_transaction_yearly ADD COLUMN IF NOT EXISTS adjusted DEFAULT false");
+        jdbcTemplate.update("ALTER TABLE bank_transaction_yearly ADD COLUMN IF NOT EXISTS adjusted BOOLEAN DEFAULT false");
     }
 
     public static void initializeEmptyDatabase(JdbcTemplate jdbcTemplate) {
@@ -29,5 +30,12 @@ public class SourceManagementUtils {
                 "amount NUMERIC(10,2) NOT NULL," +
                 "merchant VARCHAR(36) NOT NULL" +
                 ")");
+    }
+
+    public static void insertBankTransaction(BankTransaction transaction, JdbcTemplate jdbcTemplate) {
+        jdbcTemplate.update("INSERT INTO bank_transaction_yearly (month, day, hour, minute, amount, merchant) " +
+                "VALUES (?, ?, ?, ?, ?, ?)",
+                transaction.getMonth(), transaction.getDay(), transaction.getHour(),
+                transaction.getMinute(), transaction.getAmount(), transaction.getMerchant());
     }
 }

@@ -65,7 +65,8 @@ public class BankTransactionAnalysisJobConfiguration {
     @Qualifier("fillBalanceStep")
     public Step fillBalanceStep(JobRepository jobRepository, PlatformTransactionManager transactionManager,
                                 @Qualifier("sourceDataSource") DataSource sourceDataSource,
-                                RegenerateRecordsService regenerateRecordsService) {
+                                RegenerateRecordsService regenerateRecordsService,
+                                @Value("${regenerate.bank.transaction.records}") Boolean regenerateRecords) {
         FillBalanceProcessor processor = new FillBalanceProcessor();
         return new StepBuilder("fill-balance", jobRepository)
                 .<BankTransaction, BalanceUpdate>chunk(10, transactionManager)
@@ -87,7 +88,9 @@ public class BankTransactionAnalysisJobConfiguration {
                 .listener(new StepExecutionListener() {
                     @Override
                     public void beforeStep(StepExecution stepExecution) {
-                        regenerateRecordsService.regenerateBankTransactionRecords();
+                        if(regenerateRecords) {
+                            regenerateRecordsService.regenerateBankTransactionRecords();
+                        }
                         SourceManagementUtils.addBalanceColumn(sourceDataSource);
                         processor.setStepExecution(stepExecution);
                     }

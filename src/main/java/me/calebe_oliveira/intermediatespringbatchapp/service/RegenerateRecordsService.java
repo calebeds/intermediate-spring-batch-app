@@ -81,7 +81,7 @@ public class RegenerateRecordsService {
         System.out.println("Input source table with " + TARGET_RECORD_NUM + " records is successfully initialized");
     }
 
-    private static BankTransaction generateRecord(Random random, String[] merchants) {
+    public static BankTransaction generateRecord(Random random, String[] merchants) {
         int month = random.nextInt(12) + 1;
         int day = random.nextInt(DAYS_IN_MONTH_MAP.get(month) + 1);
         int hour = random.nextInt(24);
